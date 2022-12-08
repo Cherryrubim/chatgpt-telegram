@@ -68,8 +68,6 @@ func main() {
 
 	log.Printf("Started Telegram bot! Message @%s to start.", bot.Self.UserName)
 
-	userConversations := make(map[int64]Conversation)
-
 	for update := range updates {
 		if update.Message == nil {
 			continue
@@ -88,7 +86,7 @@ func main() {
 
 		bot.Request(tgbotapi.NewChatAction(update.Message.Chat.ID, "typing"))
 		if !update.Message.IsCommand() {
-			feed, err := chatGPT.SendMessage(update.Message.Text, userConversations[update.Message.Chat.ID].ConversationID, userConversations[update.Message.Chat.ID].LastMessageID)
+			feed, err := chatGPT.SendMessage(update.Message.Text, update.Message.Chat.ID)
 			if err != nil {
 				msg.Text = fmt.Sprintf("Error: %v", err)
 			}
@@ -128,10 +126,6 @@ func main() {
 						break pollResponse
 					}
 
-					userConversations[update.Message.Chat.ID] = Conversation{
-						LastMessageID:  response.MessageId,
-						ConversationID: response.ConversationId,
-					}
 					lastResp = markdown.EnsureFormatting(response.Message)
 					msg.Text = lastResp
 
@@ -172,7 +166,7 @@ func main() {
 		case "start":
 			msg.Text = "Send a message to start talking with ChatGPT. You can use /reload at any point to clear the conversation history and start from scratch (don't worry, it won't delete the Telegram messages)."
 		case "reload":
-			userConversations[update.Message.Chat.ID] = Conversation{}
+			chatGPT.ResetConversation(update.Message.Chat.ID)
 			msg.Text = "Started a new conversation. Enjoy!"
 		default:
 			continue
