@@ -6,8 +6,8 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
-	"syscall"
 	"strings"
+	"syscall"
 
 	"github.com/joho/godotenv"
 	"github.com/m1guelpf/chatgpt-telegram/src/chatgpt"
@@ -69,7 +69,7 @@ func main() {
 		)
 
 		//Check TELEGRAM_ID only if Chat Type is Private.
-		//This Admit Group Chat. In @BotFather you can change if bot dissable or enable Groups.  
+		//This Admit Group Chat. In @BotFather you can change if bot dissable or enable Groups.
 		userId := strconv.FormatInt(update.Message.Chat.ID, 10)
 		if os.Getenv("TELEGRAM_ID") != "" && userId != os.Getenv("TELEGRAM_ID") && update.Message.Chat.Type == "private" {
 			bot.Send(updateChatID, updateMessageID, "You are not authorized to use this bot.")
@@ -83,11 +83,11 @@ func main() {
 			bot.SendTyping(updateChatID)
 
 			//Remove Command from updateText and Empty Space.
-			if update.Message.IsCommand(){
+			if update.Message.IsCommand() {
 				splitText := strings.Split(updateText, " ")
 				updateText = strings.Join(splitText[1:], " ")
 				updateText = strings.Trim(updateText, " ")
-			}  
+			}
 			//Press Commands in Telegram Menu send Empty String, this prevents it.
 			if len(updateText) == 0 {
 				bot.Send(updateChatID, updateMessageID, "Empty text, must write something")

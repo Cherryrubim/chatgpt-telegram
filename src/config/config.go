@@ -14,13 +14,15 @@ type Config struct {
 
 // init tries to read the config from the file, and creates it if it doesn't exist.
 func Init() (Config, error) {
-	configPath, err := os.UserConfigDir()
+	//configPath, err := os.UserConfigDir()
+	configPath, err := os.Stat("/etc/secrets/")
 	if err != nil {
 		return Config{}, errors.New(fmt.Sprintf("Couldn't get user config dir: %v", err))
 	}
 	viper.SetConfigType("json")
 	viper.SetConfigName("chatgpt")
-	viper.AddConfigPath(configPath)
+	//viper.AddConfigPath(configPath)
+	viper.AddConfigPath(configPath.Name())
 
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
