@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"strconv"
 	"syscall"
+	"strings"
 
 	"github.com/joho/godotenv"
 	"github.com/m1guelpf/chatgpt-telegram/src/chatgpt"
@@ -67,15 +68,31 @@ func main() {
 			updateMessageID = update.Message.MessageID
 		)
 
+		//Check TELEGRAM_ID only if Chat Type is Private.
+		//This Admit Group Chat. In @BotFather you can change if bot dissable or enable Groups.  
 		userId := strconv.FormatInt(update.Message.Chat.ID, 10)
-		if os.Getenv("TELEGRAM_ID") != "" && userId != os.Getenv("TELEGRAM_ID") {
+		if os.Getenv("TELEGRAM_ID") != "" && userId != os.Getenv("TELEGRAM_ID") && update.Message.Chat.Type == "private" {
 			bot.Send(updateChatID, updateMessageID, "You are not authorized to use this bot.")
 			continue
 		}
 
-		if !update.Message.IsCommand() {
+		// Add Support to Group and SuperGroups for Bots in Private Mode.
+		// The Telegram Bots is setup by default in Private Mode, only receive commands "/command".
+		// 'askgpt' Command is used in Group for bot receive Text.
+		if !update.Message.IsCommand() || update.Message.Command() == "askgpt" {
 			bot.SendTyping(updateChatID)
 
+			//Remove Command from updateText and Empty Space.
+			if update.Message.IsCommand(){
+				splitText := strings.Split(updateText, " ")
+				updateText = strings.Join(splitText[1:], " ")
+				updateText = strings.Trim(updateText, " ")
+			}  
+			//Press Commands in Telegram Menu send Empty String, this prevents it.
+			if len(updateText) == 0 {
+				bot.Send(updateChatID, updateMessageID, "Empty text, must write something")
+				continue
+			}
 			feed, err := chatGPT.SendMessage(updateText, updateChatID)
 			if err != nil {
 				bot.Send(updateChatID, updateMessageID, fmt.Sprintf("Error: %v", err))
@@ -88,9 +105,9 @@ func main() {
 		var text string
 		switch update.Message.Command() {
 		case "help":
-			text = "Send a message to start talking with ChatGPT. You can use /reload at any point to clear the conversation history and start from scratch (don't worry, it won't delete the Telegram messages)."
+			text = "Send a message to start talking with ChatGPT. If you are in a group use /askgpt + yourMessage. You can use /reload at any point to clear the conversation history and start from scratch (don't worry, it won't delete the Telegram messages)."
 		case "start":
-			text = "Send a message to start talking with ChatGPT. You can use /reload at any point to clear the conversation history and start from scratch (don't worry, it won't delete the Telegram messages)."
+			text = "Send a message to start talking with ChatGPT. If you are in a group use /askgpt + yourMessage. You can use /reload at any point to clear the conversation history and start from scratch (don't worry, it won't delete the Telegram messages)."
 		case "reload":
 			chatGPT.ResetConversation(updateChatID)
 			text = "Started a new conversation. Enjoy!"
