@@ -37,10 +37,10 @@ func main() {
 	chatGPT := chatgpt.Init(config)
 	log.Println("Started ChatGPT")
 
-	err = godotenv.Load()
-	if err != nil {
-		log.Fatalf("Couldn't load .env file: %v", err)
-	}
+	//err = godotenv.Load()
+	//if err != nil {
+	//	log.Fatalf("Couldn't load .env file: %v", err)
+	//}
 
 	bot, err := tgbot.New(os.Getenv("TELEGRAM_TOKEN"))
 	if err != nil {
