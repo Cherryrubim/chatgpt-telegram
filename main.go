@@ -9,7 +9,7 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/joho/godotenv"
+	
 	"github.com/m1guelpf/chatgpt-telegram/src/chatgpt"
 	"github.com/m1guelpf/chatgpt-telegram/src/config"
 	"github.com/m1guelpf/chatgpt-telegram/src/session"
